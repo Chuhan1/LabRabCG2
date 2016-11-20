@@ -1,0 +1,219 @@
+﻿<HTML>
+<BODY>
+<p>Lab2 Rasterizacia mnogougolnikov</p>
+
+
+<canvas id="lab02" width="400" height="400">
+	<script>
+
+	class Point 
+        { 
+            constructor(x, y) 
+             { 
+                this.x = x; 
+                this.y = y; 
+             } 
+        } 
+
+
+
+
+
+
+	function createLine(context, x0, y0, x1, y1) 
+         { 
+             var deltax1 = Math.abs(x1 - x0); 
+             var deltay1 = Math.abs(y1 - y0); 
+             var paramNakl; 
+ 
+             if(deltax1 >= deltay1) 
+             { 
+                paramNakl = 1; 
+             } 
+             else 
+             { 
+                paramNakl = 0; 
+             } 
+ 
+            var deltax2; 
+            var deltay2; 
+            var X0; 
+            var Y0;  
+            var dy = 1; 
+ 
+            if(paramNakl) 
+            { 
+                 deltax2 = deltax1; 
+                 deltay2 = deltay1; 
+  
+                 if(x0 <= x1) 
+                 { 
+                     X0 = x0; 
+                     Y0 = y0; 
+  
+                     if((y1 - y0) < 0) 
+                     { 
+                         dy = -1; 
+                     } 
+                 } 
+                 else 
+                 { 
+                    X0 = x1; 
+                    Y0 = y1; 
+ 
+                    if((y1 - y0) > 0) 
+                    { 
+                        dy = -1; 
+                    } 
+                 } 
+             } 
+             else 
+             { 
+                 deltax2 = deltay1; 
+                 deltay2 = deltax1; 
+ 
+                 if(y0 <= y1) 
+                 {                      
+	             X0 = x0; 
+                     Y0 = y0; 
+ 
+                     if((x1 - x0) < 0) 
+                     { 
+                         dy = -1; 
+                     } 
+                  } 
+                  else 
+                  { 
+                     X0 = x1; 
+                    Y0 = y1; 
+ 
+                     if((x1 - x0) > 0) 
+                     { 
+                         dy = -1; 
+                     } 
+                  } 
+             } 
+  
+             var d = 2 * deltay2 - deltax2; 
+             var y = 0; 
+  
+             for(i = 0; i < deltax2; i++) 
+             { 
+                 if(d >= 0) 
+                 { 
+                     y += dy; 
+                     d += 2 * (deltay2 - deltax2); 
+		 } 
+		 else 
+                 { 
+                     d += 2 * deltay2; 
+                 } 
+  
+                 if(paramNakl) 
+                 {  
+		     
+		     context.fillRect(i + X0, y + Y0, 1, 1);
+                 } 
+                 else 
+                 {         
+		              
+		     context.fillRect(y + X0, i + Y0, 1, 1);
+                 } 
+             } 
+             } 
+
+
+		function pixelFill(context,x, y) 
+		{ 
+ 			if (context.getImageData(x, y, 1, 1).data[3] != 255) 
+ 			{ 
+				
+				context.fillRect(x, y, 1, 1);
+				pixelFill(context,x+1, y);
+				pixelFill(context,x-1, y);
+				pixelFill(context,x, y+1);
+				pixelFill(context,x, y-1);
+ 				
+				
+ 			} 
+		}
+
+
+	var canvas = document.getElementById("lab02");
+	var context = canvas.getContext("2d");
+	context.fillStyle = "black";   
+	var points = [];
+	var pcount = 0;
+
+	function onClick()
+	{
+
+		if(event.which == 1)
+		{
+			var x = event.offsetX;
+			var y = event.offsetY;
+
+			let point = new Point(x,y);
+			points.push(point);
+			
+			pcount++;
+
+			if(pcount > 1)
+			{
+  				createLine(context, points[pcount-1].x, points[pcount-1].y,points[pcount-2].x, points[pcount-2].y);
+			}
+			context.fillRect(point.x, point.y, 1, 1);
+                 
+		}
+
+		if(event.which == 2)
+		{
+
+
+
+			createLine(context, points[pcount-1].x,points[pcount-1].y ,points[0].x , points[0].y);
+			
+
+			var xs =[];
+			var ys =[];
+
+			for(var k=0;k < points.length;k++)
+			{
+				xs.push(points[k].x);
+				ys.push(points[k].y);
+			}
+				xs.push(points[0].x);
+				ys.push(points[0].y);
+			
+			var Sum1 =0;
+			var Sum2 =0;
+			var A=0;
+
+			for(var i=0;i < xs.length-1;i++)
+			{
+				
+					Sum1 += (xs[i]+xs[i+1])*(xs[i]*ys[i+1]-xs[i+1]*ys[i]);
+					Sum2 += (ys[i]+ys[i+1])*(xs[i]*ys[i+1]-xs[i+1]*ys[i]);
+					A += (xs[i]*ys[i+1]-xs[i+1]*ys[i]);
+				
+			}
+			
+			A=A/2;
+			var x0 = Math.round((1/(6*A))*Sum1);
+			var y0 = Math.round((1/(6*A))*Sum2);
+			
+			
+
+			pixelFill(context,x0, y0);
+
+			points = [];
+			pcount = 0;
+
+		}
+	}
+
+canvas.addEventListener("click", onClick); 
+</script>
+</canvas>
+</BODY>
+</HTML>
